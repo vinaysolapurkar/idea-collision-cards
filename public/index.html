@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Idea Collision Cards</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: white;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 15px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header {
+      text-align: center;
+      padding: 15px 0;
+    }
+    
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 3px; }
+    .subtitle { font-size: 13px; opacity: 0.7; }
+    
+    .cards-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 10px 0;
+    }
+    
+    .card-slot {
+      background: rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 12px;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px dashed rgba(255,255,255,0.2);
+    }
+    
+    .card-slot.has-card {
+      border: 2px solid;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .card-slot.spark { border-color: #FF6B35; }
+    .card-slot.twist { border-color: #00B4D8; }
+    .card-slot.amplify { border-color: #9B5DE5; }
+    
+    .card-image {
+      width: 70px;
+      height: 70px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .card-content { flex: 1; }
+    
+    .card-type {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    
+    .spark .card-type { color: #FF6B35; }
+    .twist .card-type { color: #00B4D8; }
+    .amplify .card-type { color: #9B5DE5; }
+    
+    .card-text { font-size: 14px; line-height: 1.35; }
+    
+    .placeholder {
+      text-align: center;
+      width: 100%;
+      opacity: 0.5;
+      font-size: 13px;
+    }
+    
+    .ai-ideas {
+      background: linear-gradient(135deg, rgba(155,93,229,0.2), rgba(0,180,216,0.2));
+      border-radius: 14px;
+      padding: 15px;
+      margin-top: 10px;
+      display: none;
+      border: 1px solid rgba(155,93,229,0.3);
+    }
+    
+    .ai-ideas.show {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    .ai-ideas-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      color: #9B5DE5;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .ai-ideas-title .sparkle { animation: pulse 1.5s infinite; }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .idea-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      line-height: 1.4;
+      border-left: 3px solid #00B4D8;
+    }
+    
+    .idea-item:last-child { margin-bottom: 0; }
+    
+    .idea-number {
+      font-weight: 700;
+      color: #00B4D8;
+      margin-right: 6px;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      opacity: 0.7;
+    }
+    
+    .loading-dots::after {
+      content: '';
+      animation: dots 1.5s infinite;
+    }
+    
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .actions {
+      padding: 15px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .btn {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #FF6B35, #00B4D8);
+      color: white;
+    }
+    
+    .btn-ai {
+      background: linear-gradient(135deg, #9B5DE5, #00B4D8);
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .deck-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .deck-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+    }
+    
+    .deck-btn.spark { background: #FF6B35; }
+    .deck-btn.twist { background: #00B4D8; }
+    .deck-btn.amplify { background: #9B5DE5; }
+    
+    .timer {
+      text-align: center;
+      font-size: 42px;
+      font-weight: 700;
+      padding: 15px;
+      display: none;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+    
+    .timer.show { display: block; }
+    
+    .collision-text {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      display: none;
+    }
+    
+    .collision-text.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎯 Idea Collision</h1>
+      <p class="subtitle">Draw cards. AI generates ideas. Magic happens.</p>
+    </header>
+    
+    <div class="cards-area">
+      <div class="card-slot" id="spark-slot" onclick="drawCard('spark')">
+        <div class="placeholder">Tap to draw a SPARK card</div>
+      </div>
+      
+      <div class="card-slot" id="twist-slot" onclick="drawCard('twist')">
+        <div class="placeholder">Tap to draw a TWIST card</div>
+      </div>
+      
+      <div class="card-slot" id="amplify-slot" onclick="drawCard('amplify')">
+        <div class="placeholder">Tap to draw AMPLIFY (optional)</div>
+      </div>
+      
+      <div class="collision-text" id="collision"></div>
+      
+      <div class="ai-ideas" id="ai-ideas">
+        <div class="ai-ideas-title"><span class="sparkle">✨</span> AI-GENERATED IDEAS</div>
+        <div id="ideas-list"></div>
+      </div>
+      
+      <div class="timer" id="timer">5:00</div>
+    </div>
+    
+    <div class="actions">
+      <div class="deck-buttons">
+        <button class="deck-btn spark" onclick="drawCard('spark')">🔥 SPARK</button>
+        <button class="deck-btn twist" onclick="drawCard('twist')">⚡ TWIST</button>
+        <button class="deck-btn amplify" onclick="drawCard('amplify')">🚀 AMPLIFY</button>
+      </div>
+      <button class="btn btn-primary" onclick="drawAll()">🎲 Draw SPARK + TWIST</button>
+      <button class="btn btn-ai" id="generate-btn" onclick="generateIdeas()" disabled>✨ Generate AI Ideas</button>
+      <button class="btn btn-secondary" onclick="startTimer()">⏱️ Start 5-min Timer</button>
+      <button class="btn btn-secondary" onclick="resetAll()">🔄 Reset All</button>
+    </div>
+  </div>
+
+  <script>
+    const cards = {
+      spark: [
+        { text: "Boring meetings that waste everyone's time", img: "spark-01.png" },
+        { text: "Customers who browse but never buy", img: "spark-02.png" },
+        { text: "Team members who don't communicate", img: "spark-03.png" },
+        { text: "A product nobody knows about", img: "spark-04.png" },
+        { text: "Too many ideas, no execution", img: "spark-05.png" },
+        { text: "Experts who can't explain things simply", img: "spark-06.png" },
+        { text: "People who start but never finish", img: "spark-07.png" },
+        { text: "Information scattered across 10 different apps", img: "spark-08.png" },
+        { text: "Creative block that won't go away", img: "spark-09.png" },
+        { text: "Habits you can't seem to build", img: "spark-10.png" },
+        { text: "Feedback that hurts but you need to hear", img: "spark-11.png" },
+        { text: "A skill you want but can't find time to learn", img: "spark-12.png" },
+        { text: "Decisions that paralyze you", img: "spark-13.png" },
+        { text: "Money that disappears without a trace", img: "spark-14.png" },
+        { text: "Relationships that feel one-sided", img: "spark-15.png" },
+        { text: "Health goals that keep slipping", img: "spark-16.png" },
+        { text: "A message that isn't getting through", img: "spark-17.png" },
+        { text: "Too much screen time, not enough living", img: "spark-18.png" },
+        { text: "Fear of putting yourself out there", img: "spark-19.png" },
+        { text: "Perfectionism that kills progress", img: "spark-20.png" },
+        { text: "A community that doesn't engage", img: "spark-21.png" },
+        { text: "Talent that's going unnoticed", img: "spark-22.png" },
+        { text: "Work that feels meaningless", img: "spark-23.png" },
+        { text: "Energy that drains by 2pm", img: "spark-24.png" },
+        { text: "Clutter — physical or mental", img: "spark-25.png" },
+        { text: "Promises you keep breaking to yourself", img: "spark-26.png" },
+        { text: "Competition that seems unbeatable", img: "spark-27.png" },
+        { text: "Knowledge stuck in your head, not shared", img: "spark-28.png" },
+        { text: "Waiting for the right moment", img: "spark-29.png" },
+        { text: "Success that feels hollow", img: "spark-30.png" }
+      ],
+      twist: [
+        { text: "What if a 10-year-old had to solve this?", img: "twist-01.png" },
+        { text: "Make it a game with points and levels", img: "twist-02.png" },
+        { text: "What would the opposite solution look like?", img: "twist-03.png" },
+        { text: "Solve it using only things from nature", img: "twist-04.png" },
+        { text: "What if you had unlimited money but only 1 hour?", img: "twist-05.png" },
+        { text: "Turn it into a daily 2-minute ritual", img: "twist-06.png" },
+        { text: "What if it had to be silent — no words?", img: "twist-07.png" },
+        { text: "Make it social — requires 2+ people", img: "twist-08.png" },
+        { text: "What if AI did 90% of the work?", img: "twist-09.png" },
+        { text: "Solve it with music or rhythm", img: "twist-10.png" },
+        { text: "What if failure was impossible?", img: "twist-11.png" },
+        { text: "Make it physical — use your hands or body", img: "twist-12.png" },
+        { text: "What would a comedian do with this?", img: "twist-13.png" },
+        { text: "Solve it by removing things, not adding", img: "twist-14.png" },
+        { text: "What if it had to fit on a single Post-it?", img: "twist-15.png" },
+        { text: "Turn the weakness into the main feature", img: "twist-16.png" },
+        { text: "What if strangers had to help each other?", img: "twist-17.png" },
+        { text: "Make it happen while walking", img: "twist-18.png" },
+        { text: "What if you charged 10x more?", img: "twist-19.png" },
+        { text: "Solve it using only questions, no answers", img: "twist-20.png" },
+        { text: "What would your hero do?", img: "twist-21.png" },
+        { text: "Make it work offline — no technology", img: "twist-22.png" },
+        { text: "What if it had to be done in public?", img: "twist-23.png" },
+        { text: "Combine it with food or cooking", img: "twist-24.png" },
+        { text: "What if you could only use it once?", img: "twist-25.png" },
+        { text: "Make it competitive — there's a winner", img: "twist-26.png" },
+        { text: "What would ancient wisdom say?", img: "twist-27.png" },
+        { text: "Solve it through storytelling", img: "twist-28.png" },
+        { text: "What if it had to be beautiful first?", img: "twist-29.png" },
+        { text: "Make it reversible — easy to undo", img: "twist-30.png" }
+      ],
+      amplify: [
+        { text: "How could this help 1 million people?", img: "amplify-01.png" },
+        { text: "What would the premium version cost?", img: "amplify-02.png" },
+        { text: "Who else has this exact problem?", img: "amplify-03.png" },
+        { text: "What's the 30-second pitch?", img: "amplify-04.png" },
+        { text: "How would you teach this to someone?", img: "amplify-05.png" },
+        { text: "What's the smallest first step?", img: "amplify-06.png" },
+        { text: "Who would pay for this TODAY?", img: "amplify-07.png" },
+        { text: "What could go wrong? How prevent it?", img: "amplify-08.png" },
+        { text: "How do you measure success?", img: "amplify-09.png" },
+        { text: "What would make people share this?", img: "amplify-10.png" },
+        { text: "How could this become a habit?", img: "amplify-11.png" },
+        { text: "What's the emotional hook?", img: "amplify-12.png" },
+        { text: "How would you explain this to grandma?", img: "amplify-13.png" },
+        { text: "What's your unfair advantage?", img: "amplify-14.png" },
+        { text: "How could this work while you sleep?", img: "amplify-15.png" },
+        { text: "Who's the perfect first customer?", img: "amplify-16.png" },
+        { text: "What's version 2.0?", img: "amplify-17.png" },
+        { text: "How would a big company steal this?", img: "amplify-18.png" },
+        { text: "What would make this go viral?", img: "amplify-19.png" },
+        { text: "What would you regret NOT trying?", img: "amplify-20.png" }
+      ]
+    };
+    
+    let currentCards = { spark: null, twist: null, amplify: null };
+    let timerInterval = null;
+    
+    function drawCard(type) {
+      const deck = cards[type];
+      const card = deck[Math.floor(Math.random() * deck.length)];
+      currentCards[type] = card;
+      
+      const slot = document.getElementById(`${type}-slot`);
+      slot.className = `card-slot has-card ${type}`;
+      slot.innerHTML = `
+        <img class="card-image" src="images/${card.img}" alt="">
+        <div class="card-content">
+          <div class="card-type">${type === 'spark' ? '🔥 SPARK' : type === 'twist' ? '⚡ TWIST' : '🚀 AMPLIFY'}</div>
+          <div class="card-text">${card.text}</div>
+        </div>
+      `;
+      
+      updateUI();
+    }
+    
+    function drawAll() {
+      drawCard('spark');
+      setTimeout(() => drawCard('twist'), 150);
+    }
+    
+    function updateUI() {
+      const collision = document.getElementById('collision');
+      const generateBtn = document.getElementById('generate-btn');
+      
+      if (currentCards.spark && currentCards.twist) {
+        let msg = `<strong>🔥</strong> "${currentCards.spark.text}" <strong>+</strong> <strong>⚡</strong> "${currentCards.twist.text}"`;
+        if (currentCards.amplify) {
+          msg += ` <strong>→</strong> <strong>🚀</strong> "${currentCards.amplify.text}"`;
+        }
+        collision.innerHTML = msg;
+        collision.classList.add('show');
+        generateBtn.disabled = false;
+      } else {
+        generateBtn.disabled = true;
+      }
+    }
+    
+    async function generateIdeas() {
+      if (!currentCards.spark || !currentCards.twist) return;
+      
+      const aiSection = document.getElementById('ai-ideas');
+      const ideasList = document.getElementById('ideas-list');
+      const generateBtn = document.getElementById('generate-btn');
+      
+      generateBtn.disabled = true;
+      generateBtn.textContent = '⏳ Generating...';
+      
+      aiSection.classList.add('show');
+      ideasList.innerHTML = '<div class="loading">AI is thinking<span class="loading-dots"></span></div>';
+      
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            spark: currentCards.spark.text,
+            twist: currentCards.twist.text,
+            amplify: currentCards.amplify?.text || null
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.ideas && data.ideas.length > 0) {
+          ideasList.innerHTML = data.ideas.map((idea, i) => `
+            <div class="idea-item">
+              <span class="idea-number">${i + 1}.</span>${idea}
+            </div>
+          `).join('');
+        } else {
+          ideasList.innerHTML = '<div class="idea-item">No ideas generated. Try again!</div>';
+        }
+      } catch (e) {
+        ideasList.innerHTML = `<div class="idea-item">Error: ${e.message}</div>`;
+      }
+      
+      generateBtn.disabled = false;
+      generateBtn.textContent = '✨ Generate AI Ideas';
+    }
+    
+    function resetAll() {
+      currentCards = { spark: null, twist: null, amplify: null };
+      
+      ['spark', 'twist', 'amplify'].forEach(type => {
+        const slot = document.getElementById(`${type}-slot`);
+        slot.className = 'card-slot';
+        slot.innerHTML = `<div class="placeholder">Tap to draw a ${type.toUpperCase()} card</div>`;
+      });
+      
+      document.getElementById('collision').classList.remove('show');
+      document.getElementById('ai-ideas').classList.remove('show');
+      document.getElementById('generate-btn').disabled = true;
+      stopTimer();
+    }
+    
+    function startTimer() {
+      const timer = document.getElementById('timer');
+      timer.classList.add('show');
+      let seconds = 300;
+      
+      if (timerInterval) clearInterval(timerInterval);
+      
+      timerInterval = setInterval(() => {
+        seconds--;
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        timer.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        
+        if (seconds <= 0) {
+          clearInterval(timerInterval);
+          timer.textContent = "⏰ TIME!";
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        }
+      }, 1000);
+    }
+    
+    function stopTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      document.getElementById('timer').classList.remove('show');
+    }
+    
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
