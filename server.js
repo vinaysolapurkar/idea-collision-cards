@@ -22,19 +22,23 @@ async function generateIdeas(spark, twist, amplify) {
     throw new Error('DEEPSEEK_API_KEY not configured. Set it in your environment variables.');
   }
 
-  const prompt = `You are a creative business idea generator. Given these brainstorming prompts, generate 3 specific, actionable business or product ideas.
+  const prompt = `You help people brainstorm simple business ideas.
 
-PROBLEM (SPARK): "${spark}"
-APPROACH (TWIST): "${twist}"
-${amplify ? `AMPLIFY: "${amplify}"` : ''}
+THE PROBLEM: "${spark}"
+THE APPROACH: "${twist}"
+${amplify ? `PUSH FURTHER: "${amplify}"` : ''}
 
-Generate exactly 3 creative ideas that combine these prompts. Each idea should be:
-- Specific and actionable
-- 1-2 sentences max
-- Practical to implement
+Give me 3 simple ideas that solve this real problem using this approach.
 
-Format as JSON array: ["idea 1", "idea 2", "idea 3"]
-Only output the JSON array, nothing else.`;
+Rules:
+- Write like you're texting a friend
+- One short sentence each
+- Real examples people can actually do
+- No jargon, no buzzwords
+- Think: "What would I actually build this weekend?"
+
+Format: JSON array ["idea 1", "idea 2", "idea 3"]
+Only the array, nothing else.`;
 
   return new Promise((resolve, reject) => {
     const postData = JSON.stringify({
